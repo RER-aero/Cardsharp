@@ -1,16 +1,22 @@
 local Game = {}
-
+local Suits = require("src.game.suits")
 local Deck = require("src.game.deck")
 local Hand = require("src.game.hand")
-
+local Effect = require("src.game.effect")
+local Cardrenderer = require("src.render.card_renderer")
 function Game.enter()
+  
+    Game.CurrentDeck = Deck.new()
+Game.ActiveSuits = {Suits.Diamonds()}
+    Deck.shuffle(Game.CurrentDeck)
+Game.startRound()
+ 
+end
+function Game.startRound()
+   Game.PlayerHand = Hand.new()
     Game.DealerHand = Hand.new()
 
-    Game.PlayerHand = Hand.new()
-    Game.CurrentDeck = Deck.new()
-    Deck.shuffle(Game.CurrentDeck)
-
-    Hand.addCard(Game.PlayerHand, Deck.draw(Game.CurrentDeck))
+        Hand.addCard(Game.PlayerHand, Deck.draw(Game.CurrentDeck))
     Hand.addCard(Game.PlayerHand, Deck.draw(Game.CurrentDeck))
 
     Hand.addCard(Game.DealerHand, Deck.draw(Game.CurrentDeck))
@@ -21,7 +27,6 @@ function Game.enter()
     print("Dealer Hand: \n" .. table.concat(DealerHandAsString) .. " Value:  " .. Hand.getValue({ Game.DealerHand[1] }))
     Game.phase = "player"
 end
-
 function Game.update(dt)
     if Game.phase == "dealer" then
         local DealerHandVal = Hand.getValue(Game.DealerHand)
@@ -35,6 +40,7 @@ function Game.update(dt)
         print("Dealer Hand: \n" .. table.concat(DealerHandAsString) .. " Value: " .. Hand.getValue(Game.DealerHand))
 
         if DealerHandVal > 21 then
+            Effect.checkTriggers(Game.ActiveSuits, Game.PlayerHand, Game.DealerHand, "dealer_bust")
             print("Dealer busts! Player wins.")
         elseif DealerHandVal > PlayerHandVal then
             print("Dealer wins.")
@@ -49,58 +55,16 @@ function Game.update(dt)
 end
 
 function Game.draw()
-    love.graphics.printf(
-        "Press H to Hit or S to Stand",
-        0,
-        300,
-        love.graphics.getWidth(),
-        "center"
-    )
+   Cardrenderer.draw(Game.PlayerHand, 100)
 
-    for C, card in ipairs(Game.PlayerHand) do
-        love.graphics.printf(
-            card.rank .. " of " .. card.suit,
-            0,
-            350 + (C - 1) * 20,
-            love.graphics.getWidth(),
-            "center"
-        )
-    end
-    love.graphics.printf(
-        "Dealers Hand: ",
-        0,
-        450,
-        love.graphics.getWidth(),
-        "center"
-    )
+if Game.phase == "player" then
+      Cardrenderer.draw({Game.DealerHand[1], {rank = "?", suit = "unknownSuit"}}, 800)
 
-    if Game.phase == "player" then
-        love.graphics.printf(
-            Game.DealerHand[1].rank .. " of " .. Game.DealerHand[1].suit,
-            0,
-            500,
-            love.graphics.getWidth(),
-            "center"
-        )
-           love.graphics.printf(
-           "Mystery Card",
-            0,
-            520,
-            love.graphics.getWidth(),
-            "center"
-        )
-    end
-    if Game.phase == "dealer" or Game.phase == "roundOver" then
-        for C, card in ipairs(Game.DealerHand) do
-            love.graphics.printf(
-                card.rank .. " of " .. card.suit,
-                0,
-                500 + (C - 1) * 20,
-                love.graphics.getWidth(),
-                "center"
-            )
-        end
-    end
+else
+     Cardrenderer.draw(Game.DealerHand, 800)
+
+end
+ 
 end
 
 function Game.keypressed(key)
@@ -117,6 +81,9 @@ function Game.keypressed(key)
     if key == "s" and Game.phase == "player" then
         Game.phase = "dealer"
         print("Player stands. Dealer's turn.")
+    end
+     if key == "space" and Game.phase == "roundOver" then
+        Game.startRound()
     end
 end
 
