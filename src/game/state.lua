@@ -32,4 +32,12 @@ function State.keypressed(key)
     end
 end
 
+
+function State.mousepressed(x, y, button)
+    if State.current and State.current.mousepressed then
+        State.current.mousepressed(x, y, button)
+    end
+end
+
+
 return State

@@ -14,16 +14,16 @@ function Effect.new(trigger, action)
 end
 
 
-function Effect.trigger(effect, playerHand, dealerHand)
+function Effect.trigger(effect, context)
  
-        effect.action(playerHand, dealerHand)
+        effect.action(context)
 end
 
-function Effect.checkTriggers(suits, playerHand, dealerHand, trigger)
+function Effect.checkTriggers(suits, context, trigger)
     for _, suit in ipairs(suits) do
         for _, effect in ipairs(suit.effects) do
             if effect.trigger == trigger then
-            Effect.trigger(effect, playerHand, dealerHand)
+                Effect.trigger(effect, context)
             end
         end
     end
