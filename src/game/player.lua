@@ -1,5 +1,6 @@
 local Player = {}
+local Suits = require("src.game.suits")
 
-Player.cash = 0
+Player.ownedSuits = {Suits.Hearts, Suits.Diamonds, Suits.Clubs, Suits.Spades}
 
 return Player

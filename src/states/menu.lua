@@ -16,13 +16,16 @@ end
 function Menu.update(dt)
 
 end
+     local  background = love.graphics.newImage("assets/ui/menu_bg.png")
 
 function Menu.draw()
-    FontRenderer.print("CARDSHARP", love.graphics.getWidth()/4, 80, 10)
+    love.graphics.draw(background, 0, 0)
+
+    FontRenderer.print("CARDSHARP", love.graphics.getWidth()/4, 80, 8)
 Button.draw(playButton)
 Button.draw(shopButton)
 
-FontRenderer.print("CASH: " .. Player.cash .."$", 80, 50, 3)
+FontRenderer.print("CASH: " .. Player.cash .."$",  300, 200, 3)
    
 end
 
@@ -36,6 +39,7 @@ function Menu.mousepressed(x, y, button)
     end
     if Button.isHovered(shopButton, x, y) then
         print("Shop button clicked. Shop functionality not implemented yet.")
+        State.switch(require("src.states.shop"))
     end
     end
 end

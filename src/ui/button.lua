@@ -1,7 +1,7 @@
 local Button = {}
 local FontRenderer = require("src.render.font_renderer")
 
-function Button.new(text, x, y, width, height, image, quad)
+function Button.new(text, x, y, width, height, image, quad, scalex, scaley)
     return {
         text = text,
         x = x,
@@ -9,7 +9,9 @@ function Button.new(text, x, y, width, height, image, quad)
         width = width,
         height = height,
         image = image,
-        quad = quad
+        quad = quad,
+        scalex = scalex,
+        scaley = scaley
     }
 end
 
@@ -23,8 +25,8 @@ function Button.draw(button)
             button.x,
             button.y,
             0,
-            4,
-            4
+            button.scalex or 1,
+            button.scaley or 1
         )
     else
         love.graphics.setColor(0.55, 0.30, 0.12, 1)
@@ -52,6 +54,9 @@ function Button.draw(button)
 end
 
 function Button.isHovered(button, mouseX, mouseY)
+    if not button then
+        return false
+    end
     return mouseX >= button.x
         and mouseX <= button.x + button.width
         and mouseY >= button.y

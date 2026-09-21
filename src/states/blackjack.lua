@@ -8,6 +8,7 @@ local Effect = require("src.game.effect")
 local Cardrenderer = require("src.render.card_renderer")
 local FontRenderer = require("src.render.font_renderer")
 local Card = require("src.game.card")
+local Button = require("src.ui.button")
 function Game.enter()
     Game.round = 0
     Game.chips = 0
@@ -26,7 +27,8 @@ function Game.enter()
 
 
 end
-
+local cashoutButton
+local continueButton 
 function Game.startRound()
     if Game.CurrentDeck == nil or #Game.CurrentDeck < 4 then
         print("Not enough cards to start a round.")
@@ -113,48 +115,53 @@ function Game.finishRound(result, trigger)
 
     if Game.round % 5 == 0 then
         Game.phase = "intermission"
+         continueButton = Button.new("Continue", 400, 400, 500, 50)
+         cashoutButton = Button.new("Cashout for " .. tostring(math.floor(Game.chips / 10)) .. " $", 400, 300, 700, 50)
     else
         Game.phase = "roundOver"
     end
 end
-
+  local  background = love.graphics.newImage("assets/ui/game_bg.png")
 function Game.draw()
+    love.graphics.draw(background, 0, 0)
     if Game.phase == "intermission" then
-       FontRenderer.print("Cashout?", 400, 300)
-        FontRenderer.print("Continue?", 400, 400)
+        Button.draw(cashoutButton)
+        Button.draw(continueButton)
+       FontRenderer.print("Cashout will convert your chips into permanent cash.", 400, 350)
+      
 
         return
     end
    
 
-    Cardrenderer.draw(Game.PlayerHand, 100)
-    love.graphics.print("Player: " .. Hand.getValue(Game.PlayerHand, Game.ActiveSuits), 400, 380)
+    Cardrenderer.draw(Game.PlayerHand, 510, 300)
+    love.graphics.print("Player: " .. Hand.getValue(Game.PlayerHand, Game.ActiveSuits), 300, 300)
 
     if Game.phase == "player" then
-        Cardrenderer.draw({ Game.DealerHand[1], {
+        Cardrenderer.draw({  {
             rank = "?",
             suit = "unknownSuit"
-        } }, 800)
-        FontRenderer.print("Dealer: " .. Hand.getValue({ Game.DealerHand[1] }, Game.ActiveSuits), 400, 360)
+        }, Game.DealerHand[1] }, 510, 100)
+        FontRenderer.print("Dealer: " .. Hand.getValue({ Game.DealerHand[1] }, Game.ActiveSuits), 740, 100)
     else
-        Cardrenderer.draw(Game.DealerHand, 800)
-        FontRenderer.print("Dealer: " .. Hand.getValue(Game.DealerHand, Game.ActiveSuits), 400, 360)
+        Cardrenderer.draw(Game.DealerHand, 510, 100)
+        FontRenderer.print("Dealer: " .. Hand.getValue(Game.DealerHand, Game.ActiveSuits), 740, 100)
     end
     if Game.phase == "roundOver" then
         if Game.roundResult == "player_wins" then
-            FontRenderer.print("Player wins! Press Space to play again.", 400, 320)
+            FontRenderer.print("Player wins! Press Space to play again.", 400, 450)
         elseif Game.roundResult == "dealer_wins" then
-            FontRenderer.print("Dealer wins! Press Space to play again.", 400, 320)
+            FontRenderer.print("Dealer wins! Press Space to play again.", 400, 450)
         elseif Game.roundResult == "tie" then
-            FontRenderer.print("It's a tie! Press Space to play again.", 400, 320)
+            FontRenderer.print("It's a tie! Press Space to play again.", 400, 450)
         elseif Game.roundResult == "blackjack" then
-            FontRenderer.print("BLACKJACK! Press Space to play again.", 400, 320)
+            FontRenderer.print("BLACKJACK! Press Space to play again.", 400, 450)
         end
     end
      for _, card in ipairs(Game.PlayerHand) do
         if Cardrenderer.isHovered(card, love.mouse.getX(), love.mouse.getY()) then
             print("hovering")
-            FontRenderer.print(Card.toString(card, Game.ActiveSuits):upper(), card.x , card.y - 80)
+            FontRenderer.print(Card.toString(card, Game.ActiveSuits):upper(),  900 , card.y - 80,2)
         end
     end
 end
@@ -165,9 +172,9 @@ function Game.mousepressed(x, y, button)
     end
    
     if Game.phase == "intermission" then
-        if x >= 400 and x <= 600 and y >= 300 and y <= 350 then
+      if Button.isHovered(cashoutButton, love.mouse.getX(), love.mouse.getY()) then
             Game.cashOut()
-        elseif x >= 400 and x <= 600 and y >= 400 and y <= 450 then
+        elseif Button.isHovered(continueButton, love.mouse.getX(), love.mouse.getY()) then
             print("Continue selected. Starting next round.")
             Game.startRound()
         end
@@ -185,8 +192,10 @@ end
 
 function Game.endRun()
     local Menu = require("src.states.menu")
+    local Save = require("src.game.save")
 
     print("Game Over. Thanks for playing!")
+    Save.savePlayerData(Player)
     State.switch(Menu)
 end
 

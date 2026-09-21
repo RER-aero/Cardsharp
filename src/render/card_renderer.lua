@@ -4,11 +4,11 @@ local Suits = require("src.game.suits")
 local base = love.graphics.newImage("assets/cards/base.png")
 local back = love.graphics.newImage("assets/cards/cardBack.png")
 
-function Cardrenderer.draw(cards, init)
+function Cardrenderer.draw(cards, initx, inity)
     if cards == nil then return end
     for i, card in ipairs(cards) do
-         card.x = init + (i - 1) * 60
-         card.y = 200
+         card.x = initx + (i - 1) * 60
+         card.y = inity
          if card.sprite then
 card.width = 19 * 4
 card.height = 26 * 4

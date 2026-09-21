@@ -7,19 +7,21 @@ local Deck = require("src.game.deck")
 local suitSheet = love.graphics.newImage("assets/ui/suitselect.png")
 local Game = require("src.states.blackjack")
 local Suit = require("src.game.suit")
+local Player = require("src.game.player")
 local suitButtons = {}
 local startButton = Button.new("START", love.graphics.getWidth()/2-100, 600, 200, 60)
 SuitSelection.AvailableSuits = {
     Suits.Diamonds,
     Suits.Hearts,
+    Suits.Spades,
+    Suits.Clubs,
     Suits.Bones,
     Suits.Feathers,
     Suits.Stars,
     Suits.Pentacles,
     Suits.Bells,
     Suits.Crowns,
-    Suits.Spades,
-    Suits.Clubs
+   
 }
 
 SuitSelection.ActiveSuits = {}
@@ -28,7 +30,9 @@ function SuitSelection.enter()
     suitButtons = {}
     print("Entered suit selection")
     for i, suit in ipairs(SuitSelection.AvailableSuits) do
-        local xpos = 50 + (i - 1) * 150 - (math.floor((i - 1) / 5) * 750)
+        if table.contains(Player.ownedSuits, suit) then
+            print("Player owns suit: " .. suit.name)
+                 local xpos = 50 + (i - 1) * 150 - (math.floor((i - 1) / 5) * 750)
 
         local ypos = 200 * (math.floor((i - 1) / 5) + 1)
       local button = Button.new(
@@ -45,12 +49,18 @@ function SuitSelection.enter()
         32,
         suitSheet:getWidth(),
         suitSheet:getHeight()
-    )
+    ),
+    4,
+    4
 )
 
 button.suit = suit
 
 table.insert(suitButtons, button)
+        else
+            print("Player does not own suit: " .. suit.name)
+        end
+   
     end
 end
 local hoveredButton
@@ -74,8 +84,7 @@ function SuitSelection.draw()
         end
     end
     if hoveredButton then
-            -- FontRenderer.print(hoveredButton.suit.name:upper(), 850, 200 - 30, 2, 4, 100)
-            -- FontRenderer.print(hoveredButton.suit.description:upper(), 800, 250 - 30, 2, 2, 20)
+            
             FontRenderer.print(Suit.tostring(hoveredButton.suit):upper(), 800, 300 - 30, 2, 2, 20)
     end
 Button.draw(startButton)
