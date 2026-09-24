@@ -1,18 +1,18 @@
 local Suit = {}
 
 
-function Suit.new(name, symbol, description, ranks, color)
+function Suit.new(name, description, ranks, color, spriteIndex)
     local suit = {
         id = name:lower(),
         name = name,
-        symbol = symbol,
         description = description,
         ranks = ranks,
-        color = color,
+        color = tostring(color),
         effects = {},
         modifiers = {},
-image = love.graphics.newImage("assets/cards/" .. name:lower() .. ".png")  }
-
+image = love.graphics.newImage("assets/cards/" .. name:lower() .. ".png"),
+    spriteIndex = tonumber(spriteIndex) or 1
+    }
     return suit
 end
 
