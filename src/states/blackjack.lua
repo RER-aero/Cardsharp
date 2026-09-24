@@ -24,14 +24,16 @@ function Game.enter()
         Suits.Spades,
         Suits.Clubs
     }
-
-
 end
+
+local stayButton = Button.new("STAY", 300, 500, 200, 60)
+local hitButton = Button.new("HIT", 600, 500, 200, 60)
 local cashoutButton
-local continueButton 
+local continueButton
 function Game.startRound()
     if Game.CurrentDeck == nil or #Game.CurrentDeck < 4 then
         print("Not enough cards to start a round.")
+        Deck.shuffle(Game.CurrentDeck)
         return
     end
     Game.roundResult = nil
@@ -82,7 +84,6 @@ function Game.update(dt)
             Game.finishRound("tie")
         end
     end
-   
 end
 
 function Game.finishRound(result, trigger)
@@ -115,37 +116,39 @@ function Game.finishRound(result, trigger)
 
     if Game.round % 5 == 0 then
         Game.phase = "intermission"
-         continueButton = Button.new("Continue", 400, 400, 500, 50)
-         cashoutButton = Button.new("Cashout for " .. tostring(math.floor(Game.chips / 10)) .. " $", 400, 300, 700, 50)
+        continueButton = Button.new("Continue", 400, 400, 500, 50)
+        cashoutButton = Button.new("Cashout for " .. tostring(math.floor(Game.chips / 10)) .. " $", 400, 300, 700, 50)
     else
         Game.phase = "roundOver"
     end
 end
-  local  background = love.graphics.newImage("assets/ui/game_bg.png")
+
+local background = love.graphics.newImage("assets/ui/game_bg.png")
 function Game.draw()
     love.graphics.draw(background, 0, 0)
     if Game.phase == "intermission" then
         Button.draw(cashoutButton)
         Button.draw(continueButton)
-       FontRenderer.print("Cashout will convert your chips into permanent cash.", 400, 350)
-      
+        FontRenderer.print("Cashout will convert your chips into permanent cash.", 400, 350)
+
 
         return
     end
-   
-
+    FontRenderer.print("Chips: " .. Game.chips, 100, 100, 3)
+    Button.draw(stayButton)
+    Button.draw(hitButton)
     Cardrenderer.draw(Game.PlayerHand, 510, 300)
-    love.graphics.print("Player: " .. Hand.getValue(Game.PlayerHand, Game.ActiveSuits), 300, 300)
+    FontRenderer.print("Player: " .. Hand.getValue(Game.PlayerHand, Game.ActiveSuits), 300, 300, 2)
 
     if Game.phase == "player" then
-        Cardrenderer.draw({  {
+        Cardrenderer.draw({ {
             rank = "?",
             suit = "unknownSuit"
         }, Game.DealerHand[1] }, 510, 100)
-        FontRenderer.print("Dealer: " .. Hand.getValue({ Game.DealerHand[1] }, Game.ActiveSuits), 740, 100)
+        FontRenderer.print("Dealer: " .. Hand.getValue({ Game.DealerHand[1] }, Game.ActiveSuits), 740, 100, 2)
     else
         Cardrenderer.draw(Game.DealerHand, 510, 100)
-        FontRenderer.print("Dealer: " .. Hand.getValue(Game.DealerHand, Game.ActiveSuits), 740, 100)
+        FontRenderer.print("Dealer: " .. Hand.getValue(Game.DealerHand, Game.ActiveSuits), 740, 100, 2)
     end
     if Game.phase == "roundOver" then
         if Game.roundResult == "player_wins" then
@@ -158,10 +161,10 @@ function Game.draw()
             FontRenderer.print("BLACKJACK! Press Space to play again.", 400, 450)
         end
     end
-     for _, card in ipairs(Game.PlayerHand) do
+    for _, card in ipairs(Game.PlayerHand) do
         if Cardrenderer.isHovered(card, love.mouse.getX(), love.mouse.getY()) then
             print("hovering")
-            FontRenderer.print(Card.toString(card, Game.ActiveSuits):upper(),  900 , card.y - 80,2)
+            FontRenderer.print(Card.toString(card, Game.ActiveSuits):upper(), 830, card.y - 80, 2)
         end
     end
 end
@@ -170,13 +173,20 @@ function Game.mousepressed(x, y, button)
     if button ~= 1 then
         return
     end
-   
+
     if Game.phase == "intermission" then
-      if Button.isHovered(cashoutButton, love.mouse.getX(), love.mouse.getY()) then
+        if Button.isHovered(cashoutButton, love.mouse.getX(), love.mouse.getY()) then
             Game.cashOut()
         elseif Button.isHovered(continueButton, love.mouse.getX(), love.mouse.getY()) then
             print("Continue selected. Starting next round.")
             Game.startRound()
+        end
+    end
+    if Game.phase == "player" then
+        if Button.isHovered(stayButton, love.mouse.getX(), love.mouse.getY()) then
+            Game.keypressed("s")
+        elseif Button.isHovered(hitButton, love.mouse.getX(), love.mouse.getY()) then
+            Game.keypressed("h")
         end
     end
 end
@@ -229,7 +239,5 @@ function Game.keypressed(key)
         Game.startRound()
     end
 end
-
-
 
 return Game
