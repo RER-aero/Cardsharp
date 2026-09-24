@@ -3,113 +3,186 @@ local Menu = require("src.states.menu")
 local FontRenderer = require("src.render.font_renderer")
 local Suit = require("src.game.suit")
 local Button = require("src.ui.button")
-local suitselect = require("src.states.suitselect")
 local Player = require("src.game.player")
-local Shop = {}
-local backButton = Button.new("BACK", love.graphics.getWidth() - 250, 600, 200, 60)
-local suitSheet = love.graphics.newImage("assets/ui/shopselect.png")
+local Save = require("src.game.save")
 local Suits = require("src.game.suits")
-local shopDate = tonumber(os.date("%y%m%d"))
-local shopSpriteIndex = {
-    [Suits.Bones] = 1,
-    [Suits.Feathers] = 2,
-    [Suits.Stars] = 3,
-    [Suits.Pentacles] = 4,
-    [Suits.Crowns] = 5,
-    [Suits.Bells] = 6
-}
 
+local Shop = {}
+
+local backButton = Button.new(
+    "BACK",
+    love.graphics.getWidth() - 250,
+    600,
+    200,
+    60
+)
+
+local purchaseButton = Button.new(
+    "BUY",
+    450,
+    100,
+    200,
+    60
+)
+
+local suitSheet = love.graphics.newImage("assets/ui/shopselect.png")
+local background = love.graphics.newImage("assets/ui/shop_bg.png")
+
+-- local shopSpriteIndex = {
+--     [Suits.Bones] = 1,
+--     [Suits.Feathers] = 2,
+--     [Suits.Stars] = 3,
+--     [Suits.Pentacles] = 4,
+--     [Suits.Crowns] = 5,
+--     [Suits.Bells] = 6,
+--     [Suits.Swords] = 7
+
+-- }
 
 local stockButtons = {}
-function table.indexof(t, value)
-    for i, v in ipairs(t) do
-        if v == value then
-            return i
-        end
-    end
-    return nil
-end
+local selectedSuit = nil
+local sillyMessage = ""
+local timer = 0
+
 local function GetStockForTheDay(seed)
     local available = {}
-    
 
-    -- Build a list of suits the player doesn't own
-    for _, suit in ipairs(suitselect.AvailableSuits) do
-        if not table.contains(Player.ownedSuits, suit) then
+    for _, suit in ipairs(Suits.AllSuits) do
+        local isStarterSuit =
+            suit == Suits.Diamonds or
+            suit == Suits.Hearts or
+            suit == Suits.Spades or
+            suit == Suits.Clubs
+
+        if not isStarterSuit and not table.contains(Player.ownedSuits, suit) then
             table.insert(available, suit)
         end
     end
 
     local stock = {}
 
-    -- Pick up to 4 suits
     for i = 1, math.min(3, #available) do
-        -- Generate a deterministic index from the date
         local index = (seed % #available) + 1
 
         table.insert(stock, available[index])
         table.remove(available, index)
 
-        -- Change the seed for the next selection
         seed = (seed * 1103515245 + 12345) % 2147483648
     end
 
     return stock
 end
 
-local inStock = GetStockForTheDay(shopDate)
-inStock = GetStockForTheDay(shopDate)
-function Shop.enter()
-    stockButtons = {}
-
-    -- Recalculate in case the player bought something
-    inStock = GetStockForTheDay(shopDate)
-
-    for i, suit in ipairs(inStock) do
-        print("SHOP SLOT", i, "=", suit.name)
-        local button = Button.new(
-            "",
-            50 + (i - 1) * 120,
-            90,
+local function createStockButton(suit, index)
+    local spriteIndex = suit.spriteIndex - 4
+    return Button.new(
+        "",
+        50 + (index - 1) * 120,
+        90,
+        90,
+        112,
+        suitSheet,
+        love.graphics.newQuad(
+            (spriteIndex - 1) * 90,
+            0,
             90,
             112,
-            suitSheet,
-            love.graphics.newQuad(
-                (shopSpriteIndex[suit] - 1) * 90,
-                0,
-                90,
-                112,
-                suitSheet:getWidth(),
-                suitSheet:getHeight()
-            ),
-            1.25,
-            1.25
-        )
-        print("Adding suit to stock: " .. suit.name)
+            suitSheet:getWidth(),
+            suitSheet:getHeight()
+        ),
+        1.25,
+        1.25,
+        suit.name
+    )
+end
+
+local function refreshStock()
+    stockButtons = {}
+    selectedSuit = nil
+
+    local shopDate = tonumber(os.date("%y%m%d"))
+    local stock = GetStockForTheDay(shopDate)
+
+    for i, suit in ipairs(stock) do
         table.insert(stockButtons, {
-            button = button,
+            button = createStockButton(suit, i),
             suit = suit
         })
-
-        print("BUTTON", i, "=", stockButtons[#stockButtons].suit.name)
     end
 end
 
-function Shop.update(dt)
-
+function Shop.enter()
+    sillyMessage = ""
+    timer = 0
+    refreshStock()
 end
 
-local background = love.graphics.newImage("assets/ui/shop_bg.png")
+function Shop.update(dt)
+    if sillyMessage ~= "" then
+        timer = timer + dt
+
+        if timer >= 3 then
+            sillyMessage = ""
+        end
+    end
+end
+
 function Shop.draw()
     love.graphics.draw(background, 0, 0)
-FontRenderer.print("Suits: 15$ a pop", 0, 1, 4)
-FontRenderer.print("CASH: " .. Player.cash .."$",  900, 100, 3)
+
+    FontRenderer.print("Suits: 15$ a pop", 0, 1, 4)
+    FontRenderer.print("CASH: " .. Player.cash .. "$", 900, 100, 3)
+
     Button.draw(backButton)
-    for _, button in ipairs(stockButtons) do
-        Button.draw(button.button)
-        if Button.isHovered(button.button, love.mouse.getX(), love.mouse.getY()) then
-            FontRenderer.print(Suit.tostring(button.suit), 800, 100, 2, 2, 20)
+
+    if selectedSuit ~= nil then
+        Button.draw(purchaseButton)
+    end
+
+    for _, stock in ipairs(stockButtons) do
+        Button.draw(stock.button)
+
+        if Button.isHovered(
+            stock.button,
+            love.mouse.getX(),
+            love.mouse.getY()
+        ) then
+            FontRenderer.print(
+                Suit.tostring(stock.suit),
+                800,
+                300,
+                2,
+                2,
+                20
+            )
         end
+    end
+
+    for _, stock in ipairs(stockButtons) do
+        if selectedSuit == stock.suit then
+            love.graphics.setColor(0, 1, 0, 0.5)
+
+            love.graphics.rectangle(
+                "fill",
+                stock.button.x,
+                stock.button.y,
+                stock.button.width * stock.button.scalex,
+                stock.button.height * stock.button.scaley
+            )
+
+            love.graphics.setColor(1, 1, 1, 1)
+        end
+    end
+
+    if sillyMessage ~= "" then
+        FontRenderer.print(
+            sillyMessage,
+            850,
+            200,
+            2,
+            2,
+            20
+        )
     end
 end
 
@@ -120,30 +193,47 @@ function Shop.keypressed(key)
 end
 
 function Shop.mousepressed(x, y, button)
-    if button == 1 then
-        if Button.isHovered(backButton, x, y) then
-            State.switch(Menu)
+    if button ~= 1 then
+        return
+    end
+
+    if Button.isHovered(backButton, x, y) then
+        State.switch(Menu)
+        return
+    end
+
+    for _, stock in ipairs(stockButtons) do
+        if Button.isHovered(stock.button, x, y) then
+            if selectedSuit == stock.suit then
+                selectedSuit = nil
+            else
+                selectedSuit = stock.suit
+            end
+
+            return
         end
-        for _, stock in ipairs(stockButtons) do
-            if Button.isHovered(stock.button, x, y) then
-                local suit = stock.suit
-                if Player.cash >= 100 then
-                    if not table.contains(Player.ownedSuits, suit) then
-                        Player.cash = Player.cash - 100
-                        table.insert(Player.ownedSuits, suit)
-                        print("Purchased suit: " .. suit.name)
-                        State.switch(Shop)
-                    else
-                        print("You already own this suit: " .. suit.name)
-                    end
-                else
-                    print("Not enough cash to purchase: " .. suit.name)
+    end
+
+    if Button.isHovered(purchaseButton, x, y) and selectedSuit ~= nil then
+        if Player.cash >= 15 then
+            Player.cash = Player.cash - 15
+            table.insert(Player.ownedSuits, selectedSuit)
+
+            Save.savePlayerData(Player)
+
+            for i, stock in ipairs(stockButtons) do
+                if stock.suit == selectedSuit then
+                    table.remove(stockButtons, i)
+                    break
                 end
             end
+
+            selectedSuit = nil
+        else
+            timer = 0
+            sillyMessage = "Bro can't even afford this suit, get a job!!!! LMAO"
         end
     end
 end
-
-
 
 return Shop
