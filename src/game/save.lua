@@ -31,21 +31,14 @@ function Save.savePlayerData(player)
 end
 
 function Save.loadPlayerData()
-    if not love.filesystem.getInfo("player/player_data.lua") then
+    if not love.filesystem.exists("player/player_data.lua") then
         return nil
     end
 
     local data = love.filesystem.load("player/player_data.lua")()
 
-    if not data then
-        return nil
-    end
-
-    data.ownedSuits = data.ownedSuits or {}
-
-    -- Convert saved suit names back into suit objects
     for i, suitName in ipairs(data.ownedSuits) do
-        for _, suit in pairs(Suits) do
+        for _, suit in ipairs(Suits.AllSuits) do
             if suit.name == suitName then
                 data.ownedSuits[i] = suit
                 break
@@ -55,5 +48,8 @@ function Save.loadPlayerData()
 
     return data
 end
+
+
+
 
 return Save
