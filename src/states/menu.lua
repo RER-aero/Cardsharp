@@ -25,7 +25,7 @@ function Menu.draw()
 Button.draw(playButton)
 Button.draw(shopButton)
 
-FontRenderer.print("CASH: " .. Player.cash .."$",  300, 200, 3)
+FontRenderer.print("CASH: " .. Player.cash .."$",  290, 200, 3)
    
 end
 
