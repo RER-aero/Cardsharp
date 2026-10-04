@@ -164,7 +164,7 @@ function Game.draw()
     for _, card in ipairs(Game.PlayerHand) do
         if Cardrenderer.isHovered(card, love.mouse.getX(), love.mouse.getY()) then
             print("hovering")
-            FontRenderer.print(Card.toString(card, Game.ActiveSuits):upper(), 830, card.y - 80, 2)
+            FontRenderer.print(Card.toString(card, Game.ActiveSuits):upper(), 700, card.y - 80, 2)
         end
     end
 end

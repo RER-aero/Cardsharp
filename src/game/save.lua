@@ -31,7 +31,7 @@ function Save.savePlayerData(player)
 end
 
 function Save.loadPlayerData()
-    if not love.filesystem.exists("player/player_data.lua") then
+    if not love.filesystem.getInfo("player/player_data.lua") then
         return nil
     end
 

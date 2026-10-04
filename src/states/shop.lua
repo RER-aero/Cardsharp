@@ -28,16 +28,7 @@ local purchaseButton = Button.new(
 local suitSheet = love.graphics.newImage("assets/ui/shopselect.png")
 local background = love.graphics.newImage("assets/ui/shop_bg.png")
 
--- local shopSpriteIndex = {
---     [Suits.Bones] = 1,
---     [Suits.Feathers] = 2,
---     [Suits.Stars] = 3,
---     [Suits.Pentacles] = 4,
---     [Suits.Crowns] = 5,
---     [Suits.Bells] = 6,
---     [Suits.Swords] = 7
 
--- }
 
 local stockButtons = {}
 local selectedSuit = nil

@@ -1,5 +1,4 @@
 local State = require("src.game.state")
-local Game = require("src.states.blackjack")
 local Player = require("src.game.player")
 local FontRenderer = require("src.render.font_renderer")
 local Button = require("src.ui.button")

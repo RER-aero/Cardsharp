@@ -6,7 +6,6 @@ local Game = require("src.states.blackjack")
 local Suits = require("src.game.suits")
 local State = require("src.game.state")
 local Save = require("src.game.save")
-Anim8 = require 'libraries/anim8'
 
 
 function love.load()
