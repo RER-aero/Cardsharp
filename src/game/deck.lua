@@ -5,9 +5,6 @@ local Deck = {}
 function Deck.new(suits)
     local deck = {}
 
-    
-
-
     for _, suit in ipairs(suits) do
         for _, rank in ipairs(suit.ranks) do
             table.insert(deck, Card.new(rank, suit))

@@ -12,11 +12,11 @@ function love.load()
     local data = Save.loadPlayerData()
 
     if data then
-        Player.cash = data.cash
-        Player.ownedSuits = data.ownedSuits
+            Player.cash = data.cash
+            Player.ownedSuits = data.ownedSuits
     else
-        Player.cash = 0
-        Player.ownedSuits = {
+            Player.cash = 0
+            Player.ownedSuits = {
             Suits.Hearts,
             Suits.Diamonds,
             Suits.Clubs,

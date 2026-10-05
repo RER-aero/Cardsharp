@@ -5,10 +5,12 @@ local Suits = require("src.game.suits")
 local Deck = require("src.game.deck")
 local Hand = require("src.game.hand")
 local Effect = require("src.game.effect")
+local Upgrade = require("src.game.upgrade")
 local Cardrenderer = require("src.render.card_renderer")
 local FontRenderer = require("src.render.font_renderer")
 local Card = require("src.game.card")
 local Button = require("src.ui.button")
+
 function Game.enter()
     Game.round = 0
     Game.chips = 0
@@ -24,6 +26,7 @@ function Game.enter()
         Suits.Spades,
         Suits.Clubs
     }
+    Game.activeUpgrades = {}
 end
 
 local stayButton = Button.new("STAY", 300, 500, 200, 60)
@@ -101,13 +104,11 @@ function Game.finishRound(result, trigger)
         activeSuits = Game.ActiveSuits,
         game = Game
     }
-    Effect.checkTriggers(Game.ActiveSuits, context, result)
-
     if trigger then
-        Effect.checkTriggers(Game.ActiveSuits, context, trigger)
+        Game.checkAllTriggers(context, trigger)
     end
 
-    Effect.checkTriggers(Game.ActiveSuits, context, "round_over")
+    Game.checkAllTriggers(context,"round_over")
 
     Game.chips = Game.chips + rewards[result]
 
@@ -123,6 +124,11 @@ function Game.finishRound(result, trigger)
     end
 end
 
+function Game.checkAllTriggers(trigger,context)
+  
+    Effect.checkTriggers(Game.ActiveSuits, context, trigger)
+    Upgrade.checkTriggers(Game.activeUpgrades, context, trigger)
+end
 local background = love.graphics.newImage("assets/ui/game_bg.png")
 function Game.draw()
     love.graphics.draw(background, 0, 0)
@@ -168,7 +174,9 @@ function Game.draw()
         end
     end
 end
-
+function Game.addUpgrade(upgrade)
+    table.insert(Game.activeUpgrades, upgrade)
+end
 function Game.mousepressed(x, y, button)
     if button ~= 1 then
         return
