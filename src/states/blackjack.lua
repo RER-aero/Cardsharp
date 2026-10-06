@@ -13,7 +13,12 @@ local Card = require("src.game.card")
 local Button = require("src.ui.button")
 
 function Game.enter()
-    Game.activeUpgrades = {}
+    if not Game.activeUpgrades then
+    -- Game.activeUpgrades = {}
+    Game.activeUpgrades = {
+    Upgrades.allUpgrades.red_chip
+}
+end
     Game.round = 0
     Game.chips = 0
     Game.AvailableSuits = {
@@ -28,7 +33,6 @@ function Game.enter()
         Suits.Spades,
         Suits.Clubs
     }
-    Game.activeUpgrades = {Upgrades.allUpgrades.red_chip}
 end
 
 local stayButton = Button.new("STAY", 300, 500, 200, 60)
@@ -62,8 +66,8 @@ end
 
 function Game.update(dt)
     if Game.activeUpgrades then
-    Upgrade.update(Game.activeUpgrades, dt)
-end
+        Upgrade.update(Game.activeUpgrades, dt)
+    end
     if Game.phase == "dealer" then
         local DealerHandVal = Hand.getValue(Game.DealerHand, Game.ActiveSuits)
         local PlayerHandVal = Hand.getValue(Game.PlayerHand, Game.ActiveSuits)
@@ -107,7 +111,8 @@ function Game.finishRound(result, trigger)
         playerHand = Game.PlayerHand,
         dealerHand = Game.DealerHand,
         activeSuits = Game.ActiveSuits,
-        game = Game
+        game = Game,
+        
     }
     if trigger then
         Game.checkAllTriggers(context, trigger)
@@ -124,11 +129,16 @@ function Game.finishRound(result, trigger)
         Game.phase = "intermission"
         continueButton = Button.new("Continue", 400, 400, 500, 50)
         cashoutButton = Button.new("Cashout for " .. tostring(math.floor(Game.chips / 10)) .. " $", 400, 300, 700, 50)
+    elseif Game.round % 3 == 0 then
+        Game.phase = "market"
+        local Market = require("src.states.market")
+
+        State.switch(Market)
     else
         Game.phase = "roundOver"
     end
-     
 end
+
 function Game.checkAllTriggers(context, trigger)
     Effect.checkTriggers(Game.ActiveSuits, context, trigger)
     Upgrade.checkTriggers(Game.activeUpgrades, context, trigger)
@@ -137,10 +147,10 @@ end
 local background = love.graphics.newImage("assets/ui/game_bg.png")
 function Game.draw()
     love.graphics.draw(background, 0, 0)
-if Game.activeUpgrades then
-    Upgrade.draw(Game.activeUpgrades, 100, 400)
-end
-  
+    if Game.activeUpgrades then
+        Upgrade.draw(Game.activeUpgrades, 100, 400)
+    end
+
     if Game.phase == "intermission" then
         Button.draw(cashoutButton)
         Button.draw(continueButton)
@@ -186,6 +196,11 @@ end
 
 function Game.addUpgrade(upgrade)
     table.insert(Game.activeUpgrades, upgrade)
+                print("Current upgrades: " )
+                for _, upg in ipairs(Game.activeUpgrades) do
+                    print(upg.name)
+                end
+
 end
 
 function Game.mousepressed(x, y, button)
@@ -211,6 +226,22 @@ function Game.mousepressed(x, y, button)
 end
 
 function Game.cashOut()
+      Game.round = 0
+    Game.chips = 0
+    Game.AvailableSuits = {
+        Suits.Diamonds,
+        Suits.Hearts,
+        Suits.Bones,
+        Suits.Feathers,
+        Suits.Stars,
+        Suits.Pentacles,
+        Suits.Bells,
+        Suits.Crowns,
+        Suits.Spades,
+        Suits.Clubs
+    }
+    Game.activeUpgrades = {}
+    
     local cash = math.floor(Game.chips / 10)
     Player.cash = Player.cash + cash
     print("Cashout selected.")
