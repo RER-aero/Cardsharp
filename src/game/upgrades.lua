@@ -15,13 +15,19 @@ local chip = Upgrade.new(
         function(context)
             context.game.addChips(love.math.random(1, 3))
         end
-    )
+    ),
+    1
 )
-
-table.insert(Upgrades.allUpgrades, chip)
+Upgrades.allUpgrades.red_chip = chip
 
 function Upgrades.randomPick()
-    return Upgrades.allUpgrades[love.math.random(1, #Upgrades.allUpgrades)]
+    local upgrades = {}
+
+    for _, upgrade in pairs(Upgrades.allUpgrades) do
+        table.insert(upgrades, upgrade)
+    end
+
+    return upgrades[love.math.random(1, #upgrades)]
 end
 
 return Upgrades

@@ -8,10 +8,12 @@ local Effect = require("src.game.effect")
 local Upgrade = require("src.game.upgrade")
 local Cardrenderer = require("src.render.card_renderer")
 local FontRenderer = require("src.render.font_renderer")
+local Upgrades = require("src.game.upgrades")
 local Card = require("src.game.card")
 local Button = require("src.ui.button")
 
 function Game.enter()
+    Game.activeUpgrades = {}
     Game.round = 0
     Game.chips = 0
     Game.AvailableSuits = {
@@ -26,7 +28,7 @@ function Game.enter()
         Suits.Spades,
         Suits.Clubs
     }
-    Game.activeUpgrades = {}
+    Game.activeUpgrades = {Upgrades.allUpgrades.red_chip}
 end
 
 local stayButton = Button.new("STAY", 300, 500, 200, 60)
@@ -59,6 +61,9 @@ function Game.startRound()
 end
 
 function Game.update(dt)
+    if Game.activeUpgrades then
+    Upgrade.update(Game.activeUpgrades, dt)
+end
     if Game.phase == "dealer" then
         local DealerHandVal = Hand.getValue(Game.DealerHand, Game.ActiveSuits)
         local PlayerHandVal = Hand.getValue(Game.PlayerHand, Game.ActiveSuits)
@@ -108,7 +113,7 @@ function Game.finishRound(result, trigger)
         Game.checkAllTriggers(context, trigger)
     end
 
-    Game.checkAllTriggers(context,"round_over")
+    Game.checkAllTriggers(context, "round_over")
 
     Game.chips = Game.chips + rewards[result]
 
@@ -122,16 +127,20 @@ function Game.finishRound(result, trigger)
     else
         Game.phase = "roundOver"
     end
+     
 end
-
-function Game.checkAllTriggers(trigger,context)
-  
+function Game.checkAllTriggers(context, trigger)
     Effect.checkTriggers(Game.ActiveSuits, context, trigger)
     Upgrade.checkTriggers(Game.activeUpgrades, context, trigger)
 end
+
 local background = love.graphics.newImage("assets/ui/game_bg.png")
 function Game.draw()
     love.graphics.draw(background, 0, 0)
+if Game.activeUpgrades then
+    Upgrade.draw(Game.activeUpgrades, 100, 400)
+end
+  
     if Game.phase == "intermission" then
         Button.draw(cashoutButton)
         Button.draw(continueButton)
@@ -174,9 +183,11 @@ function Game.draw()
         end
     end
 end
+
 function Game.addUpgrade(upgrade)
     table.insert(Game.activeUpgrades, upgrade)
 end
+
 function Game.mousepressed(x, y, button)
     if button ~= 1 then
         return
