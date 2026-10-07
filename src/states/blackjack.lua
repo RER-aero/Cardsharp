@@ -61,6 +61,12 @@ function Game.startRound()
     print("Dealer Hand: \n" ..
         table.concat(DealerHandAsString) .. " Value:  " .. Hand.getValue({ Game.DealerHand[1] }, Game.ActiveSuits))
     Game.round = Game.round + 1
+    Game.checkAllTriggers({
+        playerHand = Game.PlayerHand,
+        dealerHand = Game.DealerHand,
+        activeSuits = Game.ActiveSuits,
+        game = Game
+    }, "round_start")
     Game.phase = "player"
 end
 
@@ -213,6 +219,12 @@ function Game.mousepressed(x, y, button)
             Game.cashOut()
         elseif Button.isHovered(continueButton, love.mouse.getX(), love.mouse.getY()) then
             print("Continue selected. Starting next round.")
+            Game.checkAllTriggers({
+                playerHand = Game.PlayerHand,
+                dealerHand = Game.DealerHand,
+                activeSuits = Game.ActiveSuits,
+                game = Game
+            }, "continue")
             Game.startRound()
         end
     end

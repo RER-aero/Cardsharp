@@ -66,6 +66,34 @@ function ug()
         ),
         3
     ))
+    Upgrades.addUpgrade("teal_chip", Upgrade.new( --Teal Chip
+        "Teal Chip",
+        "After continuing instead of cashing out, gain 1-3 extra chips.",
+        4,
+        "continue",
+        Effect.new(
+            "continue",
+            function(context)
+                context.game.addChips(love.math.random(1, 3))
+            end
+        ),
+        3
+    ))
+    Upgrades.addUpgrade("green_chip", Upgrade.new( --Green Chip
+        "Green Chip",
+        "If initial hand is purely face cards gain 5 chips",
+        4,
+        "round_start",
+        Effect.new(
+            "round_start",
+            function(context)
+                if #context.playerHand == 2 and context.playerHand[1].rank >= 11 and context.playerHand[2].rank >= 11 then
+                    context.game.addChips(5)
+                end
+            end
+        ),
+        3
+    ))
 end
 
 function Upgrades.randomPick()
