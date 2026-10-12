@@ -63,14 +63,27 @@ local function getStock()
 
     return stock
 end
-
+local chipSheet = love.graphics.newImage("assets/upgrades/chip_spritesheet.png")
 local function createStockButton(upgrade, index)
+    local quad = love.graphics.newQuad(
+        (upgrade.spriteIndex - 1) * 32,
+        0,
+        32,
+        32,
+        chipSheet:getWidth(),
+        chipSheet:getHeight()
+    )
+
     return Button.new(
-        upgrade.name,
+        "",
         100 + (index - 1) * 300,
         150,
         250,
-        200      
+        200,
+        chipSheet,
+        quad,
+        7,
+        7
     )
 end
 
@@ -142,29 +155,29 @@ function Market.draw()
                 "\n\nCost: " ..
                 stock.upgrade.cost ..
                 " chips",
-                800,
                 300,
+                400,
                 2,
-                2,
-                20
+                1,
+                50
             )
         end
     end
 
     for _, stock in ipairs(stockButtons) do
-        if selectedUpgrade == stock.upgrade then
-            love.graphics.setColor(0, 1, 0, 0.5)
+       if selectedUpgrade == stock.upgrade then
+    love.graphics.setColor(0, 1, 0, 0.5)
 
-            love.graphics.rectangle(
-                "fill",
-                stock.button.x,
-                stock.button.y,
-                stock.button.width * (stock.button.scalex or 1),
-                stock.button.height * (stock.button.scaley or 1)
-            )
+    love.graphics.rectangle(
+        "fill",
+        stock.button.x,
+        stock.button.y,
+        32 * (stock.button.scalex or 1),
+        32 * (stock.button.scaley or 1)
+    )
 
-            love.graphics.setColor(1, 1, 1, 1)
-        end
+    love.graphics.setColor(1, 1, 1, 1)
+end
     end
 
     if sillyMessage ~= "" then
