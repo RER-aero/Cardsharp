@@ -64,11 +64,11 @@ function ug()
                 context.game.addChips(#context.playerHand)
             end
         ),
-        3
+        4
     ))
     Upgrades.addUpgrade("teal_chip", Upgrade.new( --Teal Chip
         "Teal Chip",
-        "After continuing instead of cashing out, gain 1-3 extra chips.",
+        "After continuing, gain 1-3 extra chips.",
         4,
         "continue",
         Effect.new(
@@ -77,7 +77,7 @@ function ug()
                 context.game.addChips(love.math.random(1, 3))
             end
         ),
-        3
+        5
     ))
     Upgrades.addUpgrade("green_chip", Upgrade.new( --Green Chip
         "Green Chip",
@@ -87,12 +87,12 @@ function ug()
         Effect.new(
             "round_start",
             function(context)
-                if #context.playerHand == 2 and context.playerHand[1].rank >= 11 and context.playerHand[2].rank >= 11 then
+                if context.playerHand.getValue() == 20 then
                     context.game.addChips(5)
                 end
             end
         ),
-        3
+        6
     ))
 end
 

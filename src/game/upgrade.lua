@@ -63,7 +63,7 @@ end
 
 function Upgrade.draw(upgrades, x, y)
     for i, upgrade in ipairs(upgrades) do
-        upgrade.animation:draw(chipSheet, x , y+ (i - 1) * 25,0,3,3)
+        upgrade.animation:draw(chipSheet, x , y - (i - 1) * 25,0,3,3)
     end
 end
 
